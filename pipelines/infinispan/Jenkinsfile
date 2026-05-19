@@ -8,7 +8,7 @@ spec:
   serviceAccountName: ispn-pipeline
   containers:
     - name: kubectl
-      image: bitnami/kubectl:1.31
+      image: alpine/k8s:1.31.2
       command:
         - cat
       tty: true
