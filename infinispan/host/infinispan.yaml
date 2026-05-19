@@ -9,6 +9,7 @@ spec:
   service:
     type: DataGrid
     container:
+      ephemeralStorage: true
       extraJvmOpts: >-
         -Dinfinispan.cluster.stack=kubernetes
         -Djgroups.dns.query=ispn-host-ping.infinispan.svc.cluster.regiontwo
