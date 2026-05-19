@@ -1,0 +1,78 @@
+pipeline {
+  agent {
+    kubernetes {
+      yaml '''
+apiVersion: v1
+kind: Pod
+spec:
+  serviceAccountName: jenkins
+  containers:
+    - name: kubectl
+      image: bitnami/kubectl:1.31
+      command:
+        - cat
+      tty: true
+'''
+    }
+  }
+
+  environment {
+    NAMESPACE = 'infinispan'
+    CLUSTER_NAME = 'ispn-host'
+    EXPECTED_REPLICAS = '3'
+    DNS_SUFFIX = 'cluster.regiontwo'
+  }
+
+  stages {
+    stage('Precheck') {
+      steps {
+        container('kubectl') {
+          sh '''
+            set -eu
+            kubectl version
+            kubectl get ns ${NAMESPACE}
+            kubectl get infinispan ${CLUSTER_NAME} -n ${NAMESPACE}
+          '''
+        }
+      }
+    }
+
+    stage('Patch and Verify Infinispan Host') {
+      steps {
+        container('kubectl') {
+          sh '''
+            set -eu
+            chmod +x pipelines/infinispan/patch-and-verify-ispn-host.sh
+
+            NAMESPACE=${NAMESPACE} \
+            CLUSTER_NAME=${CLUSTER_NAME} \
+            EXPECTED_REPLICAS=${EXPECTED_REPLICAS} \
+            DNS_SUFFIX=${DNS_SUFFIX} \
+            ./pipelines/infinispan/patch-and-verify-ispn-host.sh
+          '''
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      container('kubectl') {
+        sh '''
+          set +e
+          echo "===== Infinispan CR ====="
+          kubectl get infinispan ${CLUSTER_NAME} -n ${NAMESPACE} -o wide
+
+          echo "===== Pods ====="
+          kubectl get pods -n ${NAMESPACE} -o wide
+
+          echo "===== PVC ====="
+          kubectl get pvc -n ${NAMESPACE}
+
+          echo "===== Services ====="
+          kubectl get svc -n ${NAMESPACE}
+        '''
+      }
+    }
+  }
+}
