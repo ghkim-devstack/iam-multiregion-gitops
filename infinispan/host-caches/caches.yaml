@@ -1,0 +1,103 @@
+apiVersion: infinispan.org/v2alpha1
+kind: Cache
+metadata:
+  name: sessions-cache
+  namespace: infinispan
+spec:
+  clusterName: ispn-host
+  name: sessions
+  template: |
+    <distributed-cache name="sessions" mode="SYNC" owners="2" statistics="true">
+      <encoding media-type="application/x-protostream"/>
+    </distributed-cache>
+---
+apiVersion: infinispan.org/v2alpha1
+kind: Cache
+metadata:
+  name: client-sessions-cache
+  namespace: infinispan
+spec:
+  clusterName: ispn-host
+  name: clientSessions
+  template: |
+    <distributed-cache name="clientSessions" mode="SYNC" owners="2" statistics="true">
+      <encoding media-type="application/x-protostream"/>
+    </distributed-cache>
+---
+apiVersion: infinispan.org/v2alpha1
+kind: Cache
+metadata:
+  name: offline-sessions-cache
+  namespace: infinispan
+spec:
+  clusterName: ispn-host
+  name: offlineSessions
+  template: |
+    <distributed-cache name="offlineSessions" mode="SYNC" owners="2" statistics="true">
+      <encoding media-type="application/x-protostream"/>
+    </distributed-cache>
+---
+apiVersion: infinispan.org/v2alpha1
+kind: Cache
+metadata:
+  name: offline-client-sessions-cache
+  namespace: infinispan
+spec:
+  clusterName: ispn-host
+  name: offlineClientSessions
+  template: |
+    <distributed-cache name="offlineClientSessions" mode="SYNC" owners="2" statistics="true">
+      <encoding media-type="application/x-protostream"/>
+    </distributed-cache>
+---
+apiVersion: infinispan.org/v2alpha1
+kind: Cache
+metadata:
+  name: authentication-sessions-cache
+  namespace: infinispan
+spec:
+  clusterName: ispn-host
+  name: authenticationSessions
+  template: |
+    <distributed-cache name="authenticationSessions" mode="SYNC" owners="2" statistics="true">
+      <encoding media-type="application/x-protostream"/>
+    </distributed-cache>
+---
+apiVersion: infinispan.org/v2alpha1
+kind: Cache
+metadata:
+  name: login-failures-cache
+  namespace: infinispan
+spec:
+  clusterName: ispn-host
+  name: loginFailures
+  template: |
+    <distributed-cache name="loginFailures" mode="SYNC" owners="2" statistics="true">
+      <encoding media-type="application/x-protostream"/>
+    </distributed-cache>
+---
+apiVersion: infinispan.org/v2alpha1
+kind: Cache
+metadata:
+  name: action-tokens-cache
+  namespace: infinispan
+spec:
+  clusterName: ispn-host
+  name: actionTokens
+  template: |
+    <distributed-cache name="actionTokens" mode="SYNC" owners="2" statistics="true">
+      <encoding media-type="application/x-protostream"/>
+    </distributed-cache>
+---
+apiVersion: infinispan.org/v2alpha1
+kind: Cache
+metadata:
+  name: work-cache
+  namespace: infinispan
+spec:
+  clusterName: ispn-host
+  name: work
+  template: |
+    <replicated-cache name="work" mode="SYNC" statistics="true">
+      <encoding media-type="application/x-protostream"/>
+    </replicated-cache>
