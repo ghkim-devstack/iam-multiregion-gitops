@@ -6,12 +6,14 @@ metadata:
 spec:
   replicas: 3
   version: 16.0.8
+  container:
+    extraJvmOpts: >-
+      -Dinfinispan.cluster.stack=kubernetes
+      -Djgroups.dns.query=ispn-host-ping.infinispan.svc.cluster.regiontwo
   service:
     type: DataGrid
     container:
-      ephemeralStorage: true
-      extraJvmOpts: >-
-        -Dinfinispan.cluster.stack=kubernetes
-        -Djgroups.dns.query=ispn-host-ping.infinispan.svc.cluster.regiontwo
+      storage: 2Gi
+      storageClassName: general
   security:
     endpointSecretName: ispn-credentials
