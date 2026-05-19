@@ -5,7 +5,7 @@ pipeline {
 apiVersion: v1
 kind: Pod
 spec:
-  serviceAccountName: jenkins
+  serviceAccountName: ispn-pipeline
   containers:
     - name: kubectl
       image: bitnami/kubectl:1.31
@@ -29,9 +29,9 @@ spec:
         container('kubectl') {
           sh '''
             set -eu
-            kubectl version
-            kubectl get ns ${NAMESPACE}
+            kubectl version --client
             kubectl get infinispan ${CLUSTER_NAME} -n ${NAMESPACE}
+            kubectl get pods -n ${NAMESPACE} -o wide
           '''
         }
       }
@@ -53,25 +53,30 @@ spec:
         }
       }
     }
-  }
 
-  post {
-    always {
-      container('kubectl') {
-        sh '''
-          set +e
-          echo "===== Infinispan CR ====="
-          kubectl get infinispan ${CLUSTER_NAME} -n ${NAMESPACE} -o wide
+    stage('Summary') {
+      steps {
+        container('kubectl') {
+          sh '''
+            set +e
 
-          echo "===== Pods ====="
-          kubectl get pods -n ${NAMESPACE} -o wide
+            echo "===== Infinispan CR ====="
+            kubectl get infinispan ${CLUSTER_NAME} -n ${NAMESPACE}
 
-          echo "===== PVC ====="
-          kubectl get pvc -n ${NAMESPACE}
+            echo "===== Conditions ====="
+            kubectl get infinispan ${CLUSTER_NAME} -n ${NAMESPACE} \
+              -o jsonpath='{range .status.conditions[*]}{.type}{"="}{.status}{" / "}{.message}{"\\n"}{end}'
 
-          echo "===== Services ====="
-          kubectl get svc -n ${NAMESPACE}
-        '''
+            echo "===== Pods ====="
+            kubectl get pods -n ${NAMESPACE} -o wide
+
+            echo "===== PVC ====="
+            kubectl get pvc -n ${NAMESPACE}
+
+            echo "===== Services ====="
+            kubectl get svc -n ${NAMESPACE}
+          '''
+        }
       }
     }
   }
