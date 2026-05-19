@@ -3,3 +3,17 @@ kind: Kustomization
 
 resources:
   - github.com/infinispan/infinispan-operator/config/default?ref=2.5.9
+
+patches:
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: infinispan-operator-controller-manager
+      namespace: infinispan-operator-system
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env/0
+        value:
+          name: WATCH_NAMESPACE
+          value: ispn
