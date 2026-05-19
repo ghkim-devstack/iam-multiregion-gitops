@@ -11,5 +11,9 @@ spec:
     nodePort: 31222
   service:
     type: DataGrid
+    container:
+      extraJvmOpts: >-
+        -Dinfinispan.cluster.stack=kubernetes
+        -Djgroups.dns.query=ispn-host-ping.infinispan.svc.cluster.regiontwo
   security:
     endpointSecretName: ispn-credentials
