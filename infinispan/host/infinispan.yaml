@@ -6,9 +6,6 @@ metadata:
 spec:
   replicas: 3
   version: 16.0.8
-  expose:
-    type: NodePort
-    nodePort: 31222
   service:
     type: DataGrid
     container:
