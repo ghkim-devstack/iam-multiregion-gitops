@@ -1,0 +1,15 @@
+apiVersion: infinispan.org/v1
+kind: Infinispan
+metadata:
+  name: ispn-host
+  namespace: infinispan
+spec:
+  replicas: 3
+  version: 16.0.8
+  expose:
+    type: NodePort
+    nodePort: 31222
+  service:
+    type: DataGrid
+  security:
+    endpointSecretName: ispn-credentials
