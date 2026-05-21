@@ -1,0 +1,59 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: keycloak-schema-upload
+  namespace: infinispan
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      containers:
+        - name: schema-upload
+          image: alpine:3.20
+          env:
+            - name: KC_VER
+              value: "26.4.5"
+            - name: ISPN_URL
+              value: "http://ispn-host.infinispan.svc:11222"
+            - name: ISPN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: ispn-schema-upload-secret
+                  key: username
+            - name: ISPN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ispn-schema-upload-secret
+                  key: password
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+
+              echo "[INFO] Installing tools"
+              apk add --no-cache curl unzip
+
+              echo "[INFO] Downloading keycloak-model-infinispan jar: ${KC_VER}"
+              curl -fL -o /tmp/kc.jar                 "https://repo1.maven.org/maven2/org/keycloak/keycloak-model-infinispan/${KC_VER}/keycloak-model-infinispan-${KC_VER}.jar"
+
+              echo "[INFO] Extracting KeycloakModelSchema.proto"
+              cd /tmp
+              unzip -q kc.jar 'proto/*'
+
+              test -f /tmp/proto/generated/KeycloakModelSchema.proto
+
+              echo "[INFO] Uploading KeycloakModelSchema.proto to Infinispan"
+              curl --fail --digest -u "${ISPN_USER}:${ISPN_PASSWORD}" -X POST                 -H "Content-Type: application/octet-stream"                 --data-binary @/tmp/proto/generated/KeycloakModelSchema.proto                 "${ISPN_URL}/rest/v2/schemas/KeycloakModelSchema.proto"
+
+              echo
+              echo "[INFO] Checking schema list"
+              curl --fail --digest -u "${ISPN_USER}:${ISPN_PASSWORD}"                 "${ISPN_URL}/rest/v2/schemas" | grep "KeycloakModelSchema.proto"
+
+              echo
+              echo "[SUCCESS] KeycloakModelSchema.proto uploaded"
